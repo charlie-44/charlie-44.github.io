@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>City Padel Exeter - Scoreboard</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      font-size: 200%;
+      padding: 1em;
+    }
+
+    .logo {
+      width: 600px;
+      margin-bottom: 0.5em;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .team {
+      font-size: 1.75em;
+      margin: 0.5em 0;
+    }
+
+    button {
+      font-size: 0.75em;
+      margin: 0.3em;
+      padding: 0.4em 1em;
+    }
+    
+.container {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  margin-top: 1em;
+  flex-wrap: wrap;
+}
+
+#scoreboard {
+  flex: 1;
+  max-width: 700px;
+}
+
+.history {
+  flex: 1;
+  max-width: 800px;
+  text-align: left;
+  background: #222;
+  padding: 0.5em;
+  border-radius: 10px;
+  margin-left: 0.5em;
+}
+
+    .score {
+      font-size: 1.25em;
+      margin: 0.5em 0;
+    }
+
+.green {
+  color: #00FF00;
+}
+.red {
+  color: #FF0000;
+}
+
+  </style>
+</head>
+<body>
+  <img src="city-padle-exeter-logo.avif" alt="City Padel Exeter Logo" class="logo" />
+
+  <div id="setup">
+    <input type="text" id="team1" placeholder="Team 1 (e.g., Peter & Rod)" />
+    <input type="text" id="team2" placeholder="Team 2 (e.g., Jane & Freddy)" />
+    <br />
+    <button onclick="startGame()">Start Game</button>
+  </div>
+
+<div class="container hidden" id="container">
+  <div id="scoreboard">
+    <div class="team" id="team1Label"></div>
+    <div class="score" id="team1Score">Sets: 0 | Games: 0</div>
+    <button onclick="addGame(1)">+</button>
+    <button onclick="removeGame(1)">-</button>
+
+    <div class="team" id="team2Label"></div>
+    <div class="score" id="team2Score">Sets: 0 | Games: 0</div>
+    <button onclick="addGame(2)">+</button>
+    <button onclick="removeGame(2)">-</button>
+
+    <br /><br />
+    <button onclick="resetGame()">Reset Game</button>
+  </div>
+
+<div class="history">
+  <div id="historyLog"><strong>Score History:</strong></div>
+  <div id="clock" style="margin-top: 1em; font-size: 4em; text-align: right;"></div>
+</div>
+
+
+</div>
+  </div>
+
+  <script>
+    let team1Games = 0, team2Games = 0;
+    let team1Sets = 0, team2Sets = 0;
+
+    function startGame() {
+      const name1 = document.getElementById("team1").value || "Team 1";
+      const name2 = document.getElementById("team2").value || "Team 2";
+
+      document.getElementById("team1Label").textContent = name1;
+      document.getElementById("team2Label").textContent = name2;
+
+      document.getElementById("setup").classList.add("hidden");
+      document.getElementById("container").classList.remove("hidden");
+
+      updateScore();
+    }
+
+    function addGame(team) {
+      if (team === 1) {
+        team1Games++;
+      } else {
+        team2Games++;
+      }
+
+      checkSetWin();
+      updateScore();
+    }
+
+    function removeGame(team) {
+      if (team === 1 && team1Games > 0) {
+        team1Games--;
+      } else if (team === 2 && team2Games > 0) {
+        team2Games--;
+      }
+
+      updateScore();
+    }
+
+    function checkSetWin() {
+      if (team1Games >= 6 && team1Games - team2Games >= 2) {
+        team1Sets++;
+        logHistory();
+        team1Games = 0;
+        team2Games = 0;
+      } else if (team2Games >= 6 && team2Games - team1Games >= 2) {
+        team2Sets++;
+        logHistory();
+        team1Games = 0;
+        team2Games = 0;
+      }
+    }
+
+    function updateScore() {
+      document.getElementById("team1Score").textContent = `Sets: ${team1Sets} | Games: ${team1Games}`;
+      document.getElementById("team2Score").textContent = `Sets: ${team2Sets} | Games: ${team2Games}`;
+    }
+
+    function resetGame() {
+      team1Games = 0;
+      team2Games = 0;
+      team1Sets = 0;
+      team2Sets = 0;
+
+      document.getElementById("setup").classList.remove("hidden");
+      document.getElementById("container").classList.add("hidden");
+      document.getElementById("team1").value = "";
+      document.getElementById("team2").value = "";
+      document.getElementById("historyLog").innerHTML = "<strong>Score History:</strong>";
+
+      updateScore();
+    }
+
+function logHistory() {
+  const team1 = document.getElementById("team1Label").textContent;
+  const team2 = document.getElementById("team2Label").textContent;
+
+  const winner = team1Games > team2Games ? 1 : 2;
+  const team1Class = winner === 1 ? 'green' : 'red';
+  const team2Class = winner === 2 ? 'green' : 'red';
+
+  // Create new entry
+  const entryDiv = document.createElement("div");
+  entryDiv.innerHTML = `<span class="${team1Class}">${team1}: ${team1Sets} (${team1Games})</span>, <span class="${team2Class}">${team2}: ${team2Sets} (${team2Games})</span>`;
+  entryDiv.style.opacity = 1;
+
+  // Dim existing entries
+  const logContainer = document.getElementById("historyLog");
+  const oldEntries = Array.from(logContainer.querySelectorAll("div"));
+  oldEntries.forEach(div => {
+    let currentOpacity = parseFloat(div.style.opacity) || 1;
+    div.style.opacity = Math.max(currentOpacity * 0.6, 0.2); // Minimum dim level
+  });
+
+  // Insert new entry at the top
+  logContainer.insertBefore(entryDiv, logContainer.children[1]); // After <strong> header
+}
+
+
+function updateClock() {
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  document.getElementById("clock").textContent = `${hours}:${minutes}:${seconds}`;
+}
+
+setInterval(updateClock, 1000);
+updateClock(); // Initial call to show clock immediately
+
+  </script>
+</body>
+</html>
+
